@@ -1,0 +1,30 @@
+# Sphinx documentation
+docs/_build/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Editors
+.spyderproject
+.spyproject
+.vscode
+
+*.py[cod]
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+.DS_Store
+**/.DS_Store
+
+# Cache
+__pycache__/
+app/**/__pycache__/
+
+# Other
+NOTES.md
+staralt-rest.wsgi

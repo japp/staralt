@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="japp">
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+
+    <title>Altitude plot</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename='css/screen.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/jquery.datetimepicker.css') }}" rel="stylesheet">
+  </head>
+
+  <body>
+  <main role="main" class="">
+      <div id="header-top">
+        <h1>Stars observability - <small>Celestial objects altitude</small></h1>
+      </div>
+
+      <div class="content ">
+        <form method="POST" action="{{ url_for('submit') }}">
+        <div class="row">
+            <div class="col-3">
+                <div>
+                <label>Location</label>
+                <select id="observatory" name="observatory">
+                    {% for id, name in data.locs.items() %}
+                       <option value="{{ id }}" {% if id == request.form['observatory'] %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+                </div>
+                <div>
+                <label>Date</label>
+                 <input type="text" name="date" class="form-control" id="date" placeholder="Date [YYYY-MM-DD]" required="required" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" value="{{request.form['date'] }}"/>
+                </div>
+                <div>
+                    <label>Objects</label>
+                    <textarea  name="objects"  style="width: 100%;" rows="7"  />{{request.form['objects'] }}</textarea>
+                </div>
+                <p><input type="submit" value="Submit" class="btn" /></p>
+            </div>
+            <div class="col-9">
+                <img style="width: 100%;" src="data:image/png;base64,{{ plot }}"  />
+            </div>
+        </div>
+
+        <table class="table" style="width: 50%;">
+        {% for obj in objects_list %}
+           <tr>
+               <th>{{ obj['name'] }}</th>
+               <td><code>{{ obj['coords'] }}</code></td>
+           </tr>
+        {% endfor %}
+        </table>
+
+      </form>
+      </div>
+    </main><!-- /.container -->
+    <footer>Instituto de Astrof&iacute;sica de Canarias</footer>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/jquery.datetimepicker.full.min.js') }}"></script>
+    <script>
+      $(document).ready(function(){
+            jQuery('#date').datetimepicker(
+                {
+                    format: 'Y-m-d',
+                    todayButton: true,
+                    timepicker: false,
+                    dayOfWeekStart: 1 // lunes
+                }
+            );
+        });
+
+        /**
+         * Set date to today if empty
+         **/
+        $(function () {
+
+            if (!$('#date').val()) {
+                var now = new Date();
+
+                var day = ("0" + now.getDate()).slice(-2);
+                var month = ("0" + (now.getMonth() + 1)).slice(-2);
+
+                var today = now.getFullYear()+"-"+(month)+"-"+(day) ;
+
+                $('#date').val(today);
+            }
+
+        });
+
+    </script>
+    </body>
+</html>
