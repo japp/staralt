@@ -32,8 +32,8 @@
                 <div>
                 <label>Location</label>
                 <select id="observatory" name="observatory">
-                    {% for id, name in data.locs.items() %}
-                       <option value="{{ id }}" {% if id == request.form['observatory'] %}selected{% endif %}>{{ name }}</option>
+                    {% for id, location in data.locations.items() %}
+                       <option value="{{ id }}" {% if id == request.form['observatory'] %}selected{% endif %}>{{ location['name'] }}</option>
                     {% endfor %}
                 </select>
                 </div>

@@ -62,7 +62,7 @@ def OAO_observer():
 
     observer = Observer(name='Okayama Astrophysical Observatory (OAO)',
                         location=location,
-                        timezone=timezone('JST'), # Japan Standard Time
+                        timezone=timezone('Asia/Tokyo'), # Japan Standard Time (JST)
                         description="Okayama Astrophysical Observatory (NAOJ), Japan")
 
     return observer

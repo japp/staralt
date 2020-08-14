@@ -26,7 +26,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     Parameters
     ----------
     observatory : str
-        Observatory code: OT, ORM, CAHA, OAO
+        Observatory code
     observation_date : datetime
         Date of observation
     objects : list (optional)
@@ -43,18 +43,8 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
 
     """
 
-    if observatory == "ORM":
-        location = Observer.at_site("lapalma")
-    elif observatory == "Paranal":
-        location = Observer.at_site("paranal")
-    elif observatory == "CAHA":
-        location = CAHA_observer()
-    elif observatory == "OAO":
-        # Okayama Astrophysical Observatory
-        location = OAO_observer()
-    else:
-        # Teide Observatory
-        location = OT_observer()
+    # Site location
+    location = get_location(observatory)
 
     # Observation date string to use the graph
     obs_date = observation_date.strftime("%A %-d of %B, %Y")
@@ -245,17 +235,7 @@ def observability(data):
     from astroplan import is_observable, is_always_observable
 
     # Site location
-    if data['observatory'] == "ORM":
-        location = Observer.at_site("lapalma")
-    elif data['observatory'] == "Paranal":
-        location = Observer.at_site("paranal")
-    elif data['observatory'] == "CAHA":
-        location = CAHA_observer()
-    elif data['observatory'] == "OAO":
-        # Okayama Astrophysical Observatory
-        location = OAO_observer()
-    else:
-        location = OT_observer()
+    location = get_location(data['observatory'])
 
     time_range = Time([data['date'], data['date_end']])
 
@@ -308,7 +288,7 @@ def observability(data):
 
 def observability_dates(data):
     """
-    Check the observability of a single objects for several nights
+    Test the observability of a single objects for several nights
 
     If the first element of 'dates' contains a single date, then
     the observability is test as *ever* for the night. 
@@ -369,17 +349,7 @@ def observability_dates(data):
     from astroplan import is_observable, is_always_observable
 
     # Site location
-    if data['observatory'] == "ORM":
-        location = Observer.at_site("lapalma")
-    elif data['observatory'] == "Paranal":
-        location = Observer.at_site("paranal")
-    elif data['observatory'] == "CAHA":
-        location = CAHA_observer()
-    elif data['observatory'] == "OAO":
-        # Okayama Astrophysical Observatory
-        location = OAO_observer()
-    else:
-        location = OT_observer()
+    location = get_location(data['observatory'])
 
     coords = SkyCoord(ra=data['RA']*u.deg, dec=data['Dec']*u.deg)
     fixed_target = [FixedTarget(coord=coords, name=data['name'])]    
@@ -409,7 +379,7 @@ def observability_dates(data):
         # Always observable for time range
         if len(data['dates'][0]) > 0:
 
-            # If exoplanet transit, check for observability always during transit,
+            # If exoplanet transits, check for observability always during transit,
             # if not, check observability *ever* during night
             time_range = Time([date[0], date[1]])
 
@@ -434,7 +404,7 @@ def observability_dates(data):
 
 def observability_objects(data):
     """
-    Check the observability of a list of objects for a single date
+    Test the observability of a list of objects for a single date
 
     Parameters
     ----------
@@ -485,17 +455,7 @@ def observability_objects(data):
     from astroplan import is_observable, is_always_observable
 
     # Site location
-    if data['observatory'] == "ORM":
-        location = Observer.at_site("lapalma")
-    elif data['observatory'] == "Paranal":
-        location = Observer.at_site("paranal")
-    elif data['observatory'] == "CAHA":
-        location = CAHA_observer()
-    elif data['observatory'] == "OAO":
-        # Okayama Astrophysical Observatory
-        location = OAO_observer()
-    else:
-        location = OT_observer()
+    location = get_location(data['observatory'])
 
     # dict of observability for each target
     observabilities =  {}
@@ -608,3 +568,53 @@ def transits(planets, obstime=None, n_eclipses=3):
         planets_transits[name] = planet_transits
 
     return planets_transits
+
+
+def get_location(observatory=None):
+    """Return a Observer object from the observatory name
+
+    Parameters
+    ----------
+    observatory : str
+        Observatory name code: ORM, OT, Paranal, Keck, OAO, CAHA
+        Default OT.
+
+    Return
+    ------
+    location : astroplan.observer.Observer
+        If the observatory code is provided, return an Observer object for the observatory,
+        in other case return an OrderedDict of the available observatories
+
+    """
+
+    import collections
+
+    locations = collections.OrderedDict({
+            "OT" : {"name" : "Observatorio del Teide",
+                    "location" : OT_observer()
+                   },
+            "ORM": {"name" : "Observatorio del Roque de los Muchachos",
+                    "location" : Observer.at_site("lapalma")
+                   },
+            "CAHA": {"name" :  "Calar Alto Observatory",
+                    "location" : CAHA_observer()
+                   },
+            "OAO": {"name" : "Okayama Astrophysical Observatory",
+                    "location" : OAO_observer()
+                   },
+            "Keck": {"name" : "Keck Observatory",
+                    "location" : Observer.at_site("Keck Observatory")
+                   },
+        })
+
+    # If an observatory is indicated, return its Observer object,
+    # otherwise return the dict of observatories
+    if observatory:
+        return locations[observatory]['location']
+
+    return locations
+
+
+
+
+    

@@ -5,7 +5,7 @@ Staralt main
 @author: japp
 """
 
-__version__ = "0.5 - beta"
+__version__ = "0.6 - beta"
 __since__ = "2017-11-01"
 __updated__ = "2020-07-17"
 __author__= "japp <japp@iac.es>"
@@ -21,7 +21,6 @@ import socket
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import collections
 
 import sys
 
@@ -48,17 +47,12 @@ def submit():
     import base64
     from io import BytesIO
     from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-    from app.staralt import staralt
+    from app.staralt import staralt, get_location
 
     data = {}
-    # Lista de observatorios para el formulario
-    # uso OrderedDict para conservar el orden
-    data['locs'] = collections.OrderedDict({
-        "OT" : "Observatorio del Teide",
-        "ORM": "Observatorio del Roque de los Muchachos",
-        "CAHA": "Calar Alto",
-        "OAO": "Okayama Astrophysical Observatory"
-        })
+    
+    # Available locations
+    data['locations'] = get_location()
 
     # Targets list to show in page
     objects_list_str = []
@@ -96,6 +90,7 @@ def submit():
         date = datetime.datetime.strptime(request.form['date'], "%Y-%m-%d").date()
     else:
         date = datetime.date.today()
+        # Teide Observatory by default
         observatory = "OT"
         objects_list = []
 
@@ -117,7 +112,7 @@ def status():
 
     Returns
     -------
-    image : image/json
+    resp : application/json
         Service status information
   
     """
@@ -136,15 +131,18 @@ def status():
 
 
 @app.route('/staralt')
-@app.route('/staralt/<date>', methods=['GET'])
-def staralt(date=None):
+@app.route('/staralt/<date>/<observatory>', methods=['GET'])
+def staralt(date=None, observatory='OT'):
     """
     Create a basic altitude plot for the indicated date. Location is OT.
 
     Parameters
     ----------
-    date : string format YYYY-MM-DD
+    date : str format YYYY-MM-DD
         Observation date.
+    observatory : str
+        Observation code, from the locations available at staralt.get_location.
+        Default OT.
 
     Returns
     -------
@@ -156,14 +154,14 @@ def staralt(date=None):
     from app.staralt import staralt
 
     if not date:
-        # Fecha de hoy
+        # Current date
         date = datetime.datetime.today().date()
     else:
-        # Convierte el string de fecha (YYYY-MM-DD) a objeto date
+        # Convert date str YYYY-MM-DD to datatime.date
         date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
 
     # matplotlib figure
-    fig = staralt("OT", date, [])
+    fig = staralt(observatory, date, [])
 
     canvas = FigureCanvas(fig)
 
@@ -178,6 +176,9 @@ def staralt(date=None):
 
 @app.route('/altitudeplot', methods=['POST', 'GET'])
 def plot():
+    """
+    ReST service for an altitude plot
+    """
     
 
     # POST data from client, converted to json
@@ -214,6 +215,11 @@ def plot():
 
 @app.route('/observability', methods=['POST', 'GET'])
 def observability():
+    """
+    ReST service to test observability for multiple targets for a single date
+
+    Deprecated since v0.5. Use /observability_dates or /observability_objects
+    """
 
     from app.staralt import observability
 
@@ -226,6 +232,9 @@ def observability():
 
 @app.route('/observability_dates', methods=['POST', 'GET'])
 def observability_dates():
+    """
+    ReST service to test observability for multiple dates
+    """
 
     from app.staralt import observability_dates
 
@@ -238,6 +247,9 @@ def observability_dates():
 
 @app.route('/observability_objects', methods=['POST', 'GET'])
 def observability_objects():
+    """
+    ReST service to test observability for multiple targets
+    """
 
     from app.staralt import observability_objects
 
@@ -250,6 +262,9 @@ def observability_objects():
 
 @app.route('/transits', methods=['POST', 'GET'])
 def transits():
+    """
+    ReST service for exoplanetary transits
+    """
 
     from app.staralt import transits
 
