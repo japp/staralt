@@ -2,7 +2,7 @@
 
 ReST service for astronomical objects observability and altitude plots.
 
-** Version:** 0.5 - Beta
+**Version:** 0.6 - Beta
 
 Find some documentation at `docs/`. To update the documentation get into that directory and do `make html`.
 
@@ -21,18 +21,21 @@ Find some documentation at `docs/`. To update the documentation get into that di
 
 Get into the package directory and do:
 
-  python setup.py install
-
+```bash
+python setup.py install
+```
 or
 
-  pip3 install . [--user]
+```bash
+pip3 install . [--user]
+```
 
 ## Start up
 
 In debug mode, just launch the Flask microserver. Change the servername and port (5000 default) in `run.py`. 
 
 ```bash
-  $ ./run.py
+$ ./run.py
 ```
 
 In production, use the wsgi module with `staralt-rest.wsgi` as guide. 

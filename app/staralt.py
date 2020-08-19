@@ -172,11 +172,12 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
 
     # Transit band limits, if any.
     # Dates in YYYY-MM-SS hh:mm format. seconds are removed if included
-    for transit in transits:
-        t_early = datetime.datetime.strptime(transit['t_early'][:16], "%Y-%m-%d %H:%M")
-        t_late = datetime.datetime.strptime(transit['t_late'][:16], "%Y-%m-%d %H:%M")
+    if transits:
+        for transit in transits:
+            t_early = datetime.datetime.strptime(transit['t_early'][:16], "%Y-%m-%d %H:%M")
+            t_late = datetime.datetime.strptime(transit['t_late'][:16], "%Y-%m-%d %H:%M")
 
-        ax.axvspan(t_early, t_late, color=object_colors[transit['name']], alpha=0.2)
+            ax.axvspan(t_early, t_late, color=object_colors[transit['name']], alpha=0.2)
 
     ax.set_ylim(0, 90)
     ax.set_ylabel('Altitude')
@@ -410,29 +411,29 @@ def observability_objects(data):
     ----------
     data : POST data format
 
-        data = {
-            'observatory' : 'OT',
-            'altitude_lower_limit' : '30',
-            'altitude_higher_limit' : '90',
-            'objects' : [{
-                    'name' : 'Kelt 8b',
-                    'RA' : 283.30551667 ,
-                    'Dec' : 24.12738139,
+    data = {
+        'observatory' : 'OT',
+        'altitude_lower_limit' : '30',
+        'altitude_higher_limit' : '90',
+        'objects' : [{
+                'name' : 'Kelt 8b',
+                'RA' : 283.30551667 ,
+                'Dec' : 24.12738139,
+                'dates' : [
+                        ['2020-06-11 00:16:30', '2020-06-11 03:44:26'],
+                        ['2020-06-14 06:07:56', '2020-06-14 09:35:53']
+                    ]
+                },
+                {
+                    'name' : 'TIC 123456789',
+                    'RA' : 13.13055667 ,
+                    'Dec' : 24.13912738,
                     'dates' : [
-                            ['2020-06-11 00:16:30', '2020-06-11 03:44:26'],
-                            ['2020-06-14 06:07:56', '2020-06-14 09:35:53']
-                        ]
-                    },
-                    {
-                     'name' : 'TIC 123456789',
-                     'RA' : 13.13055667 ,
-                     'Dec' : 24.13912738,
-                     'dates' : [
-                            ['2020-06-11 23:59:59']
-                        ]
-                    }
-                ]
-            }
+                        ['2020-06-11 23:59:59']
+                    ]
+                }
+            ]
+        }
 
     Returns
     -------
