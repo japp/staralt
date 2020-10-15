@@ -152,13 +152,16 @@ def staralt(date=None, observatory='OT'):
     """
 
     from app.staralt import staralt
+    import pytz
 
     if not date:
         # Current date
-        date = datetime.datetime.today().date()
+        date = datetime.datetime.now(pytz.UTC).date()
     else:
         # Convert date str YYYY-MM-DD to datatime.date
         date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+        # Add UTC timezone to date
+        date = date.replace(tzinfo=pytz.UTC)
 
     # matplotlib figure
     fig = staralt(observatory, date, [])
@@ -187,7 +190,7 @@ def plot():
     from app.staralt import staralt
 
     # Convierte el string de fecha (YYYY-MM-DD) a objeto date
-    date = datetime.datetime.strptime(data['date'], "%Y-%m-%d").date()
+    date = datetime.datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
 
     # matplotlib figure
     if 'transits' in data.keys():

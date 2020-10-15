@@ -6,6 +6,7 @@ General library for altitude plots and observability
 
 import numpy as np
 import datetime
+import pytz
 from astropy.time import Time
 import matplotlib.dates as mdates
 from astropy import units as u
@@ -27,7 +28,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     ----------
     observatory : str
         Observatory code
-    observation_date : datetime
+    observation_date : datetime.datetime
         Date of observation
     objects : list (optional)
         List of dict of object to plot
@@ -47,7 +48,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     location = get_location(observatory)
 
     # Observation date string to use the graph
-    obs_date = observation_date.strftime("%A %-d of %B, %Y")
+    obs_date = observation_date.strftime("%-d of %B, %Y")
 
     # Observation date in Time object
     observation_date_Time = Time(observation_date.strftime("%Y-%m-%d 12:00"))
@@ -56,7 +57,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     # Sun's rising and setting time, in astropy.Time object
     setting_time = location.sun_set_time(observation_date_Time).datetime
     rising_time = location.sun_rise_time(observation_date_Time, which='next').datetime
-
+    
     # twilights in astropy.Time object
     if twilight == 'civil':
         twilight1 = location.twilight_evening_civil(observation_date_Time).datetime
@@ -68,7 +69,6 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
         twilight1 = location.twilight_evening_astronomical(observation_date_Time).datetime
         twilight2 = location.twilight_morning_astronomical(observation_date_Time, which='next').datetime
 
-
     # -- Plotting -------------------------------
 
     fig = Figure(figsize=(11, 6))
@@ -76,6 +76,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
 
     ax = fig.add_subplot(111)
     fig.subplots_adjust(top=0.93, right=0.88, wspace=0.01, bottom=0.24)
+    
 
     # --- Objects altitude curves -------------
     visible_time = Time(setting_time + (rising_time - setting_time)*np.linspace(0, 1, 100))
@@ -122,14 +123,31 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     # Observable hour during the night (int)
     obs_hours = int((rising_time - setting_time).total_seconds()/3600)
 
-    # list of datetimes
-    xticks = [setting_time_date + datetime.timedelta(hours=setting_time.hour + h)  for h in range(0, obs_hours+1)]
-    ax.set_xticks(xticks)
+    # list of datetimes for X axis labels
+    xticks_utc = []
+    xticks_local = []
+    xlabels = []
+
+    for h in range(0, obs_hours+1):
+        # Set hour in UTC, just in case
+        h_utc = setting_time_date.replace(tzinfo=pytz.utc) + datetime.timedelta(hours=setting_time.hour + h)
+        xticks_utc.append(h_utc)
+
+
+        h_local = h_utc.astimezone(tz=location.timezone)
+        
+        xticks_local.append(h_local)
+
+        xlabels.append("{utc:.0f}\n{local:.0f}".format(utc=int(h_utc.strftime("%H")), local=int(h_local.strftime("%H"))))
+
+    ax.set_xticks(xticks_utc)
+    ax.set_xticklabels(xlabels)
 
     # x axis date format in hours.
     # Add a hyphen between the % and the letter to remove the leading zero (01 -> 1).
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%-H'))
+    #ax.xaxis.set_major_formatter(mdates.DateFormatter('%-H'))
 
+    # --- Y axis ----
     # set the values and labels of the yticks
     ax.set_yticklabels(ylabels)
     ax_airmass = ax.twinx()
@@ -145,7 +163,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     # Plotting limits are sun setting and rising, which
     # are the first and last elements in fractions_days list
     ax.set_xlim(setting_time, rising_time)
-    ax.set_xlabel('UT, starting night ' + obs_date)
+    ax.set_xlabel('UT (up) and Local Time, starting night {}'.format(obs_date))
 
     # Upper x axis with sidereal time
     # -------------------------------
