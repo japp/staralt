@@ -50,7 +50,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     # Observation date string to use the graph
     obs_date = observation_date.strftime("%-d of %B, %Y")
 
-    # Observation date in Time object
+    # Observation date in Time string
     observation_date_Time = Time(observation_date.strftime("%Y-%m-%d 12:00"))
 
     # Position of twilights, sun rising and setting
@@ -100,7 +100,18 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
             lw=10, alpha=0.2, color='k', label='Moon')
 
     # midnight, because the computation day (observation day + 1 day)
-    ax.axvline(observation_date + datetime.timedelta(days=1), c='k')
+    observation_date_midnight = observation_date + datetime.timedelta(days=1)
+   
+
+    # setting time in date (without time)
+    observation_date_midnight = datetime.datetime.combine(observation_date_midnight, 
+                                                          datetime.datetime.min.time()
+                                                          )
+
+    #midnight = observation_date_midnight.replace(tzinfo=location.timezone).astimezone(tz=pytz.utc)
+    midnight = location.timezone.localize(observation_date_midnight)
+
+    ax.axvline(midnight, c='k')
     ax.grid()
 
     # Twilight band limits
@@ -113,7 +124,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     yticks_values = np.arange(0, 91, 10)
 
     for ang in yticks_values:
-        ylabels.append(str(ang) + "$^\circ$")
+        ylabels.append(f"{ang}$^\circ$")
 
     ylabels[0] = ""
 
@@ -123,22 +134,29 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     # Observable hour during the night (int)
     obs_hours = int((rising_time - setting_time).total_seconds()/3600)
 
+    # -- X axis time labels ---
     # list of datetimes for X axis labels
     xticks_utc = []
     xticks_local = []
     xlabels = []
 
     for h in range(0, obs_hours+1):
-        # Set hour in UTC, just in case
+        # Force time in UTC, just in case
         h_utc = setting_time_date.replace(tzinfo=pytz.utc) + datetime.timedelta(hours=setting_time.hour + h)
         xticks_utc.append(h_utc)
 
-
+        # Local time ticks
         h_local = h_utc.astimezone(tz=location.timezone)
-        
         xticks_local.append(h_local)
 
-        xlabels.append("{utc:.0f}\n{local:.0f}".format(utc=int(h_utc.strftime("%H")), local=int(h_local.strftime("%H"))))
+        utc_hour = int(h_utc.strftime("%-H"))
+        local_hour = int(h_local.strftime("%-H"))
+
+        # Add local time if it is diferent from UT
+        if utc_hour != local_hour:
+            xlabels.append('{utc:.0f}UT\n{local:.0f}'.format(utc=utc_hour, local=local_hour))
+        else:
+            xlabels.append('{utc:.0f}'.format(utc=utc_hour))
 
     ax.set_xticks(xticks_utc)
     ax.set_xticklabels(xlabels)
@@ -163,7 +181,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     # Plotting limits are sun setting and rising, which
     # are the first and last elements in fractions_days list
     ax.set_xlim(setting_time, rising_time)
-    ax.set_xlabel('UT (up) and Local Time, starting night {}'.format(obs_date))
+    ax.set_xlabel('{} Local Time, starting night {}'.format(observatory, obs_date))
 
     # Upper x axis with sidereal time
     # -------------------------------
@@ -607,13 +625,14 @@ def get_location(observatory=None):
     """
 
     import collections
+    from pytz import timezone
 
     locations = collections.OrderedDict({
             "OT" : {"name" : "Observatorio del Teide",
                     "location" : OT_observer()
                    },
             "ORM": {"name" : "Observatorio del Roque de los Muchachos",
-                    "location" : Observer.at_site("lapalma")
+                    "location" : Observer.at_site("lapalma", timezone=timezone('Atlantic/Canary'))
                    },
             "CAHA": {"name" :  "Calar Alto Observatory",
                     "location" : CAHA_observer()
@@ -622,7 +641,7 @@ def get_location(observatory=None):
                     "location" : OAO_observer()
                    },
             "Keck": {"name" : "Keck Observatory",
-                    "location" : Observer.at_site("Keck Observatory")
+                    "location" : Observer.at_site("Keck Observatory", timezone=timezone('Pacific/Honolulu'))
                    },
         })
 

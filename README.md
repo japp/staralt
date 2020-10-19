@@ -2,7 +2,7 @@
 
 ReST service for astronomical objects observability and altitude plots.
 
-**Version:** 0.6 - Beta
+**Version:** 0.7 - Beta
 
 Find some documentation at `docs/`. To update the documentation get into that directory and do `make html`.
 
@@ -42,6 +42,10 @@ In production, use the wsgi module with `staralt-rest.wsgi` as guide.
 
 ## Basic use
 
+`staralt-rest` is a ReST service, so it is designed to be used by external applications using http protocol and JSON format. In addition, it includes some basic web-basic tools.
+
+Here are some use examples in Python, but it can be done with any programing language having HTTP GET implementation. 
+
 Test the observability for a list of targets:
 
 ```python
@@ -49,7 +53,7 @@ import requests
 
 server = "https://www.example.com/staralt"
 
-objects = [
+targets = [
     {
     'name': 'Cor Caroli',
     'RA': 194.00482,
@@ -67,18 +71,18 @@ objects = [
     }
 
 
-data = requests.post(server + '/observability', json={"observatory": "Keck", 
+observability = requests.post(server + '/observability', json={"observatory": "Keck", 
                                                     "date": "2020-11-21 22:00",
                                                     "date_end": "2020-11-22 06:00",
                                                     "altitude_lower_limit": 30,
                                                     "altitude_higher_limit": 90,
                                                     "twilight_type" : "astronomical",
-                                                    "objects": objects
+                                                    "objects": targets
                                                     }
                     )
 
 
-print(data.content)
+print(observability.content)
 ```
 
 Returning a json-like string
@@ -97,7 +101,6 @@ Returning a json-like string
 }
 ```
 
-
 Create an altitude plot for a list of targets
 
 ```python
@@ -109,7 +112,7 @@ def save_image(image):
 
 image = requests.post(server + '/altitudeplot', json={"observatory": "OT", 
                                                     "date": "2020-09-28",
-                                                    "objects": objects
+                                                    "objects": targets
                                                     }
                     )
 
@@ -117,7 +120,7 @@ save_image(image.content)
 ```
 
 
-# Basic services
+## Basic ReST services
 
 ReST status of the service in JSON. 
 
@@ -125,21 +128,14 @@ ReST status of the service in JSON.
   /
 ```
 
-
-Basic web form for targets observability. 
-
-```
-  /submit
-```
-
-
-PNG altitude plot for the current or specific date. 
+Returns:
 
 ```
-  /staralt
-  /staralt/2020-08-14
+{
+  "name": "staralt-rest", 
+  "version": "0.7 - beta"
+}
 ```
-
 
 ReST service to test the observability of a list of objects for a single date
 
@@ -164,6 +160,22 @@ ReST service to compute next transits for a list of planets
 
 ```
   /transits
+```
+
+## Web based tools
+
+Basic web form for targets observability. 
+
+```
+  /submit
+```
+
+
+PNG altitude plot for the current or specific date, without targets. 
+
+```
+  /staralt
+  /staralt/2021-10-08
 ```
 
 
