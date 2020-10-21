@@ -179,7 +179,15 @@ PNG altitude plot for the current or specific date, without targets.
 ```
 
 
-## TODO
+## TODO, known bugs
 
-  * Several things...
-  * 
+  * Fix time axis on DST shift day 
+
+
+## Change log
+
+### Version 0.7 beta
+
+* x-axis now indicates local time, including DST. Locations are now timezone aware.
+* New second x-axis labels line with UT
+* Minor bug fix

@@ -5,9 +5,9 @@ Staralt main
 @author: japp
 """
 
-__version__ = "0.6 - beta"
+__version__ = "0.7 - beta"
 __since__ = "2017-11-01"
-__updated__ = "2020-07-17"
+__updated__ = "2020-10-19"
 __author__= "japp <japp@iac.es>"
 
 
