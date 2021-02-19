@@ -2,7 +2,8 @@
 
 ReST service for astronomical objects observability and altitude plots.
 
-**Version:** 0.7 - Beta
+**Version:** 0.7.1 - Beta
+**Updated:** 2021-02-19
 
 Find some documentation at `docs/`. To update the documentation get into that directory and do `make html`.
 
