@@ -62,7 +62,7 @@ def staralt(observatory, observation_date, objects, transits=[], twilight='astro
     if twilight == 'civil':
         twilight1 = location.twilight_evening_civil(observation_date_Time).datetime
         twilight2 = location.twilight_morning_civil(observation_date_Time, which='next').datetime
-    if twilight == 'nautical':
+    elif twilight == 'nautical':
         twilight1 = location.twilight_evening_nautical(observation_date_Time).datetime
         twilight2 = location.twilight_morning_nautical(observation_date_Time, which='next').datetime
     else:
@@ -533,8 +533,13 @@ def observability_objects(data):
                 observable = is_always_observable(constraints, location, fixed_target, time_range=time_range)
 
             # No time range, *ever* observabable during the night
+            # Observability is test from sunset to sunrise
+            # Default time resolution is 0.5h
             else:
-                observable = is_observable(constraints, location, fixed_target, times=Time(date[0]))
+                sunset = location.sun_set_time(Time(date[0]))
+                sunrise = location.sun_rise_time(Time(date[0]))
+                time_range = Time([sunset, sunrise])
+                observable = is_observable(constraints, location, fixed_target, time_range=time_range)
 
             # Moon location for the observation date
             moon = location.moon_altaz(Time(date[0]))

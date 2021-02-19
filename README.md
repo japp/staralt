@@ -186,6 +186,9 @@ PNG altitude plot for the current or specific date, without targets.
 
 ## Change log
 
+### Version 0.7.1
+* Fixed observability for non-transiting targets
+
 ### Version 0.7 beta
 
 * x-axis now indicates local time, including DST. Locations are now timezone aware.
