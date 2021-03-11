@@ -537,7 +537,7 @@ def observability_objects(data):
             # Default time resolution is 0.5h
             else:
                 sunset = location.sun_set_time(Time(date[0]))
-                sunrise = location.sun_rise_time(Time(date[0]))
+                sunrise = location.sun_rise_time(Time(date[0]), 'next')
                 time_range = Time([sunset, sunrise])
                 observable = is_observable(constraints, location, fixed_target, time_range=time_range)
 
